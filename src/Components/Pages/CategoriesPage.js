@@ -1,8 +1,3 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable no-param-reassign */
-/* eslint-disable consistent-return */
-// eslint-disable-next-line no-unused-vars
-import Navigate from '../Router/Navigate';
 import { clearPage } from '../../utils/render';
 import scienceImage from '../../img/science.jpg';
 import historyImage from '../../img/history.jpg';
@@ -17,6 +12,7 @@ import geographyImage from '../../img/georaphy.jpg';
 import sportImage from '../../img/sport.jpg';
 import otherImage from '../../img/other.jpg';
 import { readAllCategories } from '../../models/quizzes';
+import Navigate from '../Router/Navigate';
 
 const CategoriesPage = async () => {
   clearPage();
@@ -24,14 +20,15 @@ const CategoriesPage = async () => {
   const cards = document.querySelectorAll('.card');
   /* manages category hover events */
   cards.forEach((card) => {
-    card.addEventListener('mouseover', () => {
-      card.style.borderWidth = '2px';
-      card.classList.add('border-primary');
+    const currentCard = card;
+    currentCard.addEventListener('mouseover', () => {
+      currentCard.style.borderWidth = '2px';
+      currentCard.classList.add('border-primary');
     });
 
-    card.addEventListener('mouseout', () => {
-      card.style.borderWidth = '1px';
-      card.classList.remove('border-primary');
+    currentCard.addEventListener('mouseout', () => {
+      currentCard.style.borderWidth = '1px';
+      currentCard.classList.remove('border-primary');
     });
   });
 };
@@ -55,7 +52,7 @@ async function renderCategories() {
     }
     mainCategory += `
         <div class="col-12 col-lg-3 col-md-6">
-          <a href="/list?label=${category.label}" data-uri="/" class="text-center text-decoration-none category">
+          <a category_label = "${category.label}"class="category text-center text-decoration-none">
             <div class="card highlight-card">
               <img class="custom-img img-fluid" src="${getImageForCategory(
                 category.label,
@@ -67,7 +64,7 @@ async function renderCategories() {
           </a>
         </div>
       `;
-    count++;
+    count += 1;
   });
 
   mainCategory += `
@@ -75,6 +72,20 @@ async function renderCategories() {
     </div>
   </section>`;
   main.innerHTML = mainCategory;
+  categoryEventListeners();
+}
+
+function categoryEventListeners() {
+  const btnCategory = document.querySelectorAll('.category');
+
+  btnCategory.forEach((categoryLink) => {
+    categoryLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const categoryName = e.currentTarget.getAttribute('category_label');
+      Navigate(`/list?label=${categoryName}`);
+      console.log('Catégorie choisie:', categoryName);
+    });
+  });
 }
 
 function getImageForCategory(categoryLabel) {
@@ -90,5 +101,6 @@ function getImageForCategory(categoryLabel) {
   if (categoryLabel === 'Economie') return economyImage;
   if (categoryLabel === 'Cinéma') return cinemaImage;
   if (categoryLabel === 'Autre') return otherImage;
+  return undefined;
 }
 export default CategoriesPage;

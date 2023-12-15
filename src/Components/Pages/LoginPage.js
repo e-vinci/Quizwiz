@@ -2,9 +2,10 @@ import Swal from 'sweetalert2';
 import Navbar from '../Navbar/Navbar';
 import Navigate from '../Router/Navigate';
 import { clearPage } from '../../utils/render';
+import { logIn } from '../../models/users';
+import { checkAuthentication } from '../../utils/auths';
 
 let isRememberMeChecked = false;
-let isConditionGeneralChecked = false;
 
 function renderLoginForm() {
   const main = document.querySelector('main');
@@ -47,13 +48,6 @@ function renderLoginForm() {
                             <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
                         </div>
 
-                        <div class="mb-3 text-center">
-                          <div class="accept">
-                            J'accepte les <a href="https://www.privacypolicies.com/live/57c23a50-18c6-4d2b-9bc6-79fda5cc263d" target="_blank">termes & conditions</a>
-                          </div>
-                          <input type="checkbox" id="rgpd" class="form-check-input mt-2">
-                        </div>
-
                         <div class="mb-3">
                             <input id="login" type="button" class="btn btn-authentification mn-3  w-100"
                                 value="Se connecter" />
@@ -81,9 +75,6 @@ function renderLoginForm() {
   const souvenir = document.getElementById('rememberMe');
   souvenir.addEventListener('change', remember);
 
-  const condition = document.getElementById('rgpd');
-  condition.addEventListener('change', conditionGeneral);
-
   const passswordInput = document.querySelector('#password');
   const passwordBtn = document.querySelector('#hidePassword');
 
@@ -107,10 +98,6 @@ function remember() {
   console.log('se souvenir de moi : ', isRememberMeChecked);
 }
 
-function conditionGeneral() {
-  isConditionGeneralChecked = document.getElementById('rgpd').checked;
-  console.log('Condition general : ', isConditionGeneralChecked);
-}
 
 function handleRegisterClick() {
   Navigate('/register');
@@ -119,58 +106,71 @@ function handleRegisterClick() {
 async function handleLoginClick(e) {
   e.preventDefault();
 
-  if (!isConditionGeneralChecked) {
-    Swal.fire({
-      title: 'Accepter les conditions générales',
-      icon: 'error',
-      showConfirmButton: true,
-    });
-  } else {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
 
-    const options = {
-      method: 'POST',
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
+  if (!username || !password) {
+    showError('Tous les champs du formulaire sont obligatoires');
+    return;
+  }
 
-    const response = await fetch(`${process.env.API_BASE_URL}/users/login`, options);
+
+  try {
+    const response = await logIn(username, password);
 
     if (!response.ok) {
-      Swal.fire({
-        title: 'Le pseudo ou le mot de passe est incorrect',
-        icon: 'error',
-        showConfirmButton: true,
-      });
-    } else {
+      showError('Le pseudo ou le mot de passe est incorrect');
+      return;
+    }
+
+    const responseData = await response.json();
+
+    if (responseData && responseData.token) {
       if (isRememberMeChecked) {
-        const responseData = await response.json();
         localStorage.setItem('token', responseData.token);
       } else {
-        const responseData = await response.json();
         sessionStorage.setItem('token', responseData.token);
       }
-
-      Swal.fire({
-        title: 'Connexion réussie!',
-        icon: 'success',
-        timer: 1000,
-        showConfirmButton: false,
-      });
-
-      Navbar();
-      Navigate('/categories');
+      showSucces('Connexion réussie!');
+    } else {
+      showError('Une erreurs est survenue');
+      return;
     }
+
+    Navbar();
+    Navigate('/categories');
+  } catch (err) {
+    showError('Une erreur est survenue lors de la connexion');
+    console.error('Connexion Error:', err);
   }
 }
 
-const LoginPage = () => {
+function showError(message) {
+  Swal.fire({
+    icon: 'error',
+    title: 'Oops...',
+    text: message,
+    showConfirmButton: true,
+  });
+}
+
+function showSucces(message) {
+  Swal.fire({
+    icon: 'success',
+    text: message,
+    timer: 1000,
+    showConfirmButton: false,
+  });
+}
+
+ const LoginPage = async () => {
+  const isConnected = await checkAuthentication();
+
+  if(isConnected){
+    Navigate('/userSpace');
+    return;
+
+  }
   clearPage();
   renderLoginForm();
 };
