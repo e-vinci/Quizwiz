@@ -1,6 +1,6 @@
 const readAllUsers = async () => {
   try {
-    const response = await fetch('http://localhost:3000/users');
+    const response = await fetch(`${process.env.API_BASE_URL}/users`);
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
@@ -22,7 +22,7 @@ const updateUserPoint = async (id, score) => {
         'Content-Type': 'application/json',
       },
     };
-    const response = await fetch(`http://localhost:3000/users/${id}`, options);
+    const response = await fetch(`${process.env.API_BASE_URL}/users/${id}`, options);
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
@@ -47,7 +47,7 @@ async function logIn(username, password) {
       },
     };
 
-    const response = await fetch('http://localhost:3000/users/login', options);
+    const response = await fetch(`${process.env.API_BASE_URL}/users/login`, options);
 
     return response;
   } catch (err) {
@@ -69,7 +69,7 @@ async function register(username, password) {
       },
     };
 
-    const response = await fetch('http://localhost:3000/users/register', options);
+    const response = await fetch(`${process.env.API_BASE_URL}/users/register`, options);
     return response;
   } catch (err) {
     console.error('Register::error: ', err);
