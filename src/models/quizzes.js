@@ -138,7 +138,6 @@ const deleteOneQuiz = async (quiz) => {
 
 const readAllQuizzesByCategory = async (categoryName) => {
   try {
-    console.log('url :', `http://localhost:3000/quizzes/readAllQuizzesByCategories/?label=${categoryName}`);
     const response = await fetch(`${process.env.API_BASE_URL}/quizzes/readAllQuizzesByCategories/?label=${categoryName}`);
 
     console.log('response', response);
