@@ -29,6 +29,8 @@ const Navbar = async () => {
   if (isLogged) {
     console.log('hi je suis dans la navbar');
     await getConnectedUserDetails().then((userDetails) => {
+      console.log('userDetails');
+      console.log(userDetails);
       console.log('dans le await');
       userP = userDetails.userPoint;
       userName = userDetails.userName;
