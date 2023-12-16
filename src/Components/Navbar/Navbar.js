@@ -24,12 +24,16 @@ const Navbar = async () => {
   let createLink;
   let userSpace;
   let point;
+  let userName;
  
   if (isLogged) {
     console.log('hi je suis dans la navbar');
     await getConnectedUserDetails().then((userDetails) => {
       console.log('dans le await');
       userP = userDetails.userPoint;
+      userName = userDetails.userName;
+      console.log('username');
+      console.log(userName);
       console.log(userP);
       console.log('apres le await');
     });
