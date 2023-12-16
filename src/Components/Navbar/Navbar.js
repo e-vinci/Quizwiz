@@ -17,6 +17,8 @@ const Navbar = async () => {
   const navbarWrapper = document.querySelector('#navbarWrapper');
 
   const isLogged = localStorage.getItem('token') || sessionStorage.getItem('token');
+  console.log('je suis dans le token');
+  console.log(isLogged);
 
   let loginOrLogoutLink;
   let createLink;
