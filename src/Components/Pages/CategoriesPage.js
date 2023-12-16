@@ -46,6 +46,9 @@ async function renderCategories() {
   `;
   let count = 0;
   const categories = await readAllCategories();
+  if(categories === null){
+    return;
+  }
   categories.forEach((category) => {
     if (count % 4 === 0 && count !== 0) {
       mainCategory += `</div><div class="row mt-3">`;

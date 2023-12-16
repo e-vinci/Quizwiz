@@ -1,4 +1,6 @@
 import Swal from 'sweetalert2';
+import { showError } from '../utils/customAlerts';
+
 
 const readAllCategories = async () => {
   try {
@@ -11,7 +13,8 @@ const readAllCategories = async () => {
     return categories;
   } catch (err) {
     console.error('readAllCategories::error: ', err);
-    throw err;
+    showError(err);
+    return null;
   }
 };
 
@@ -66,8 +69,6 @@ const addOneQuiz = async (quiz) => {
 };
 
 const readAllQuizzesByUser = async () => {
-
- 
   try {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     console.log(token);
@@ -78,8 +79,8 @@ const readAllQuizzesByUser = async () => {
         authorization: `${token}`,
       },
     };
-    
-    const response = await fetch(`${process.env.API_BASE_URL}/quizzes/`,options);
+
+    const response = await fetch(`${process.env.API_BASE_URL}/quizzes`, options);
     if (!response.ok) {
       if (response.status === 400) {
         return [];
@@ -114,16 +115,15 @@ const deleteOneQuiz = async (quiz) => {
       headers: {
         'Content-Type': 'application/json',
         authorization: `${token}`,
-      
       },
     };
     console.log(options);
     const response = await fetch(`${process.env.API_BASE_URL}/quizzes/${quiz}`, options);
-    console.log(response.status)
+    console.log(response.status);
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
-    
+
     loadingSpinner.style.display = 'none';
     const deletedQuiz = await response.json();
     console.log('deletedQuiz :', deletedQuiz);
@@ -138,7 +138,13 @@ const deleteOneQuiz = async (quiz) => {
 
 const readAllQuizzesByCategory = async (categoryName) => {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/quizzes/readAllQuizzesByCategories/?label=${categoryName}`);
+    console.log(
+      'url :',
+      `http://localhost:3000/quizzes/readAllQuizzesByCategories/?label=${categoryName}`,
+    );
+    const response = await fetch(
+      `${process.env.API_BASE_URL}/quizzes/readAllQuizzesByCategories/?label=${categoryName}`,
+    );
 
     console.log('response', response);
     if (!response.ok) {
@@ -158,29 +164,22 @@ const readAllQuizzesByCategory = async (categoryName) => {
   }
 };
 const readOneQuizById = async (id) => {
-  const main = document.querySelector('main');
-  main.innerHTML += `
-  <div class="text-center" id="loadingSpinner" style="display: none;">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-`;
-  const loadingSpinner = document.querySelector('#loadingSpinner');
   try {
-    loadingSpinner.style.display = 'block';
-    console.log('igo on me demande tous de aide');
     console.log(id);
-    const response = await fetch(`${process.env.API_BASE_URL}/quizzes/readAllQuizzesByCategories/?quiz-id=${id}`);
+    const response = await fetch(
+      `${process.env.API_BASE_URL}/quizzes/readAllQuizzesByCategories/?quiz-id=${id}`,
+    );
     if (!response.ok) {
+      if (response.status === 400) {
+        return undefined;
+      }
+      console.error(`Erreur HTTP: ${response.status}`);
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
-    loadingSpinner.style.display = 'none';
     const quiz = await response.json();
     console.log('Quiz :', quiz);
     return quiz;
   } catch (err) {
-    loadingSpinner.style.display = 'none';
     console.error('readOneQuizById::error: ', err);
     throw err;
   }

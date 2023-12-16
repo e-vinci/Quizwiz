@@ -1,11 +1,9 @@
-import Swal from 'sweetalert2';
 import Navigate from '../Router/Navigate';
 import { clearPage } from '../../utils/render';
 import { logIn, register } from '../../models/users';
-import Navbar from '../Navbar/Navbar';
 import { checkAuthentication } from '../../utils/auths';
-
-
+import { createBalloons, animateBalloons } from '../../utils/animation';
+import { showError, showSuccess } from '../../utils/customAlerts';
 
 function renderRegister() {
   const main = document.querySelector('main');
@@ -58,6 +56,9 @@ function renderRegister() {
             </div>
         </div>
     </div>
+    <div class="balloon-container">
+          <!-- Balloons will be added here -->
+    </div>
 </div>`;
 
   const btnRegister = document.getElementById('register');
@@ -67,23 +68,20 @@ function renderRegister() {
   const acceptCheckbox = document.getElementById('rgpd');
 
   acceptCheckbox.addEventListener('change', () => {
-    if(acceptCheckbox.checked){
+    if (acceptCheckbox.checked) {
       btnRegister.removeAttribute('disabled');
-      msgError.innerHTML = ``
-    }else if(!acceptCheckbox.checked){
+      msgError.innerHTML = ``;
+    } else if (!acceptCheckbox.checked) {
       btnRegister.setAttribute('disabled', 'true');
-      msgError.innerHTML = `*Afin de continuer, veuillez accepter la politique de confidentialité de QuiWiz.`
+      msgError.innerHTML = `*Afin de continuer, veuillez accepter la politique de confidentialité de QuiWiz.`;
     }
   });
- }
-
+}
 
 async function handleRegisterClick() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   const verifPassword = document.getElementById('conf-password').value.trim();
-
-  console.log('les password du client ', password, verifPassword);
 
   if (!username || !password || !verifPassword) {
     showError('Tous les champs du formulaire sont obligatoires');
@@ -106,48 +104,27 @@ async function handleRegisterClick() {
 
     if (responseData && responseData.token) {
       sessionStorage.setItem('token', responseData.token);
-      showSucces('Vous etes connecter');
     } else {
       showError('Une erreurs est survenue');
       return;
     }
-
-    Navbar();
-    Navigate('/categories');
+    createBalloons();
+    animateBalloons();
   } catch (err) {
     showError("Une erreur est survenue lors de l'inscription");
-    console.error('Register Error:', err);
   }
 }
 
 const RegisterPage = async () => {
   const isConnected = await checkAuthentication();
 
-  if(isConnected){
+  if (isConnected) {
+    showSuccess('Vous êtes déjà connecté');
     Navigate('/categories');
     return;
-
   }
   clearPage();
   renderRegister();
 };
-
-function showError(message) {
-  Swal.fire({
-    icon: 'error',
-    title: 'Oops...',
-    text: message,
-    showConfirmButton: true,
-  });
-}
-
-function showSucces(message) {
-  Swal.fire({
-    icon: 'success',
-    text: message,
-    timer: 1000,
-    showConfirmButton: false,
-  });
-}
 
 export default RegisterPage;

@@ -4,6 +4,7 @@ import Navigate from '../Router/Navigate';
 import { clearPage } from '../../utils/render';
 import { readAllCategories, addOneQuiz } from '../../models/quizzes';
 import { checkAuthentication } from '../../utils/auths';
+import { showInfo, showError } from '../../utils/customAlerts';
 
 let questions = [];
 let questionCount = 0;
@@ -20,12 +21,12 @@ checkAuthentication('/create');
 const CreateQuizPage = async () => {
   const isConnected = await checkAuthentication();
 
-  if(!isConnected){
+  if (!isConnected) {
+    showError('Veuillez vous connecter');
     Navigate('/login');
     return;
-
   }
-  
+
   clearPage();
   questions = [];
   numberOfQuestions = 0;
@@ -34,22 +35,6 @@ const CreateQuizPage = async () => {
   await renderFormInfoQuiz();
   attachEventListenersFromInfoQuiz();
 };
-
-function showInfo(message) {
-  Swal.fire({
-    icon: 'info',
-    title: 'Information',
-    text: message,
-  });
-}
-
-function showError(message) {
-  Swal.fire({
-    icon: 'error',
-    title: 'Oops...',
-    text: message,
-  });
-}
 
 async function renderFormInfoQuiz() {
   clearPage();

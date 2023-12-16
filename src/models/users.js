@@ -1,3 +1,5 @@
+import Navbar from '../Components/Navbar/Navbar';
+
 const readAllUsers = async () => {
   try {
     const response = await fetch(`${process.env.API_BASE_URL}/users`);
@@ -13,20 +15,23 @@ const readAllUsers = async () => {
   }
 };
 
-const updateUserPoint = async (id, score) => {
+const updateUserPoint = async (score) => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   try {
     const options = {
       method: 'PATCH',
       body: JSON.stringify({ score }),
       headers: {
         'Content-Type': 'application/json',
+        authorization: `${token}`,
       },
     };
-    const response = await fetch(`${process.env.API_BASE_URL}/users/${id}`, options);
+    const response = await fetch(`${process.env.API_BASE_URL}/users`, options);
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
     const updatedPoint = await response.json();
+    Navbar();
     return updatedPoint;
   } catch (err) {
     console.error('updateUserPoint::error: ', err);

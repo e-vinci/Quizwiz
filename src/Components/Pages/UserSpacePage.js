@@ -9,6 +9,7 @@ import medalGold from '../../img/medal_gold.png';
 import medalSilver from '../../img/medal_silver.png';
 import medalBronze from '../../img/medal_bronze.png';
 import medalPlatine from '../../img/medal.png';
+import { showError } from '../../utils/customAlerts';
 
 const main = document.querySelector('main');
 let userID;
@@ -18,6 +19,7 @@ const UserSpacePage = async () => {
   const isConnected = await checkAuthentication();
 
   if(!isConnected){
+    showError('Veuillez vous connecter');
     Navigate('/login');
     return;
 
@@ -33,13 +35,13 @@ const UserSpacePage = async () => {
 
 async function renderUserQuiz() {
   clearPage();
-  const allQuizzesByUser = await readAllQuizzesByUser(userID);
+  const allQuizzesByUser = await readAllQuizzesByUser();
   let mainListQuiz = `
     <section>
       <div class="alert color-purple">
         <p>Bienvenue ${userName}</p>
       </div>
-      <nav class="navbar navbar-expand-lg ">
+      <nav class="navbar navbar-expand">
       <div class="container-fluid">
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ">
@@ -150,8 +152,8 @@ async function renderUserBadges() {
     <div class="alert color-purple">
     <p>Bienvenue ${userName}</p>
   </div>
-    <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
+  <nav class="navbar navbar-expand">
+  <div class="container-fluid">
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
