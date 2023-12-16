@@ -3,7 +3,7 @@ import logo from '../../img/logo.png';
 import Navigate from '../Router/Navigate';
 import { getConnectedUserDetails } from '../../utils/auths';
 import imgScore from '../../img/score.png';
-import { showSuccess, showError } from '../../utils/customAlerts';
+import { showSuccess} from '../../utils/customAlerts';
 
 /**
  * Render the Navbar which is styled by using Bootstrap
