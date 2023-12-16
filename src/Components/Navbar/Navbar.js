@@ -11,7 +11,7 @@ import { showSuccess} from '../../utils/customAlerts';
  * - the URI associated to a page shall be given in the attribute "data-uri" of the Navbar
  * - the router will show the Page associated to this URI when the user click on a nav-link
  */
-let userPoint;
+let userP;
 
 const Navbar = async () => {
   const navbarWrapper = document.querySelector('#navbarWrapper');
@@ -22,15 +22,20 @@ const Navbar = async () => {
   let createLink;
   let userSpace;
   let point;
+ 
   if (isLogged) {
+    console.log('hi je suis dans la navbar');
     await getConnectedUserDetails().then((userDetails) => {
-      userPoint = userDetails.userPoint;
+      console.log('dans le await');
+      userP = userDetails.userPoint;
+      console.log(userP);
+      console.log('apres le await');
     });
     loginOrLogoutLink = `<a id = "logOut"class="nav-link">Déconnexion</a>`;
     createLink = `<li class="nav-item"><a class="nav-link" aria-current="page" href="#" data-uri="/create">Créer</a></li>`;
     userSpace = `<a class="nav-link" href="#" data-uri="/userSpace">Mon espace</a>`;
     point = ` <a class="nav-link" id="user_point" d">
-    <img src='${imgScore}' alt="Icone Points" class="iconScore"> ${userPoint}
+    <img src='${imgScore}' alt="Icone Points" class="iconScore"> ${userP}
 </a>`;
   } else {
     loginOrLogoutLink = `<a class="nav-link text-white btn-purple text-center" href="#" data-uri="/login">Connexion</a>`;
@@ -112,7 +117,7 @@ function handleLogout() {
 function handleUserPoint() {
   Swal.fire({
     title: `Tes points`,
-    text: `Tu as accumulé ${userPoint} points ! `,
+    text: `Tu as accumulé ${userP} points ! `,
     imageUrl: `${imgScore}`,
     imageAlt: 'icon score',
     imageWidth: 150,
