@@ -19,6 +19,8 @@ async function getConnectedUserDetails() {
     }
 
     const data = response.json();
+    console.log('je suis dans la methode details front');
+    console.log(data);
     return data;
   } catch (error) {
     Swal.fire({
