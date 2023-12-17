@@ -7,7 +7,6 @@ const readAllUsers = async () => {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
     const users = await response.json();
-    console.log('Categories :', users);
     return users;
   } catch (err) {
     console.error('readAllUsers::error: ', err);
@@ -23,7 +22,7 @@ const updateUserPoint = async (score) => {
       body: JSON.stringify({ score }),
       headers: {
         'Content-Type': 'application/json',
-        authorization: `${token}`,
+        Authorization: `${token}`,
       },
     };
     const response = await fetch(`${process.env.API_BASE_URL}/users`, options);

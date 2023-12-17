@@ -29,21 +29,21 @@ const quizPage = async () => {
   clearPage();
   const url = new URLSearchParams(window.location.search);
   const quizId = url.get('id');
+  // Retrieve all questions and answers for the specified quiz
   allQuestionsAnswers = await readOneQuizById(quizId);
   if (allQuestionsAnswers === undefined) {
-    console.log('erreur');
     return redirect();
   }
   randomTab(allQuestionsAnswers);
   nbQuestion = allQuestionsAnswers.length;
-  console.log('The quiz', allQuestionsAnswers);
   renderQuizModal();
   const modal = document.getElementById('quizModal');
   const displayQuizModal = new Modal(modal);
   displayQuizModal.show();
-  return null; // // jsp eslint oblige a return a modif
+  return null;
 };
 
+// Displays the quiz start modal on the page
 function renderQuizModal() {
   clearPage();
   const main = document.querySelector('main');
@@ -65,7 +65,6 @@ function renderQuizModal() {
       <div class="form-check form-switch form-check-reverse ">
       <input class="form-check-input" type="checkbox" id="btnChecked">
      </div>
-
      </div>
 
      <div id="empty">
@@ -89,10 +88,9 @@ function renderQuizModal() {
     Navigate('/categories');
   });
 
+  // Event listener for checkbox to toggle timer configuration
   checkboxSwitch.addEventListener('change', () => {
-    console.log('je suis iciii');
     const inputTimer = document.getElementById('empty');
-
     if (checkboxSwitch.checked === true) {
       timerActivated = true;
       inputTimer.innerHTML += `<div>
@@ -104,11 +102,8 @@ function renderQuizModal() {
           aria-label=""
         />
         <span class="input-group-text" id="basic-addon2">secondes</span>
-        
-
       </div>
               <span id="errorMessage"></span>
-
       </div>
 `;
     } else {
@@ -117,28 +112,27 @@ function renderQuizModal() {
     }
   });
 
+  // Event listener for start button to validate timer configuration if checked and render quiz page
   btnStart.addEventListener('click', () => {
     const errMsg = document.getElementById('errorMessage');
-
     if (checkboxSwitch.checked) {
       timerActivated = true;
       const timerValue = document.getElementById('timer').value;
-      console.log('CHRONOOO', timerValue);
       const timerNumber = parseInt(timerValue, 10);
+      // Check input value
       if (timerNumber <= 0 || Number.isNaN(timerNumber)) {
         errMsg.innerHTML = '*Veuillez entrer une valeur pour configurer le chronométre';
         return;
       }
       errMsg.innerHTML = '';
+      // startTime is equal to the value entered by the user
       startTime = timerNumber;
     }
-
     renderQuizPage();
   });
-
-  console.log('je suis sorti');
 }
 
+// Displays the modal showing the user's score
 async function renderScore() {
   currentQuestion = 0;
   const main = document.querySelector('main');
@@ -160,44 +154,53 @@ async function renderScore() {
       </div>
       </div>
       </div>`;
+
+  // Get the current user details
   const currentUser = await getConnectedUserDetails();
+
+  // If the user is logged in, update points and handle badges
   if (currentUser) {
     userID = currentUser.userID;
-    newPoint = await updateUserPoint(score);
-    const userBadges = await readAllBadgesByUser(userID);
-    console.log('userBadges est', userBadges);
 
-    console.log('userID : ', userID);
-    if (
-      newPoint >= 200 &&
-      newPoint < 400 &&
-      !(await badgeIsAlreadyEarned('Médaille de bronze', userBadges))
-    ) {
-      winABadge('Médaille de bronze');
-    } else if (
-      newPoint >= 400 &&
-      newPoint < 600 &&
-      !(await badgeIsAlreadyEarned("Médaille d'argent", userBadges))
-    ) {
-      winABadge("Médaille d'argent");
-    } else if (
-      newPoint >= 600 &&
-      newPoint < 800 &&
-      !(await badgeIsAlreadyEarned("Médaille d'or", userBadges))
-    ) {
-      winABadge("Médaille d'or");
-    } else if (
-      newPoint >= 800 &&
-      newPoint < 1000 &&
-      !(await badgeIsAlreadyEarned('Médaille de platine', userBadges))
-    ) {
-      winABadge('Médaille de platine');
-    } else if (newPoint === 800) {
-      winABadge('Médaille de platine'); // à modif
+    // Update user points based on the score and retrieve the new point value
+    newPoint = await updateUserPoint(score);
+
+    // Get all badges earned by the current user
+    const userBadges = await readAllBadgesByUser(userID);
+
+    // Check and award badges based on the points of the user
+    if (userBadges.length < 4) {
+      if (
+        newPoint >= 200 &&
+        newPoint < 400 &&
+        !userBadges.some((badge) => badge.label === 'Médaille de bronze')
+      ) {
+        winABadge('Médaille de bronze');
+      } else if (
+        newPoint >= 400 &&
+        newPoint < 600 &&
+        !userBadges.some((badge) => badge.label === "Médaille d'argent")
+      ) {
+        winABadge("Médaille d'argent");
+      } else if (
+        newPoint >= 600 &&
+        newPoint < 800 &&
+        !userBadges.some((badge) => badge.label === "Médaille d'or")
+      ) {
+        winABadge("Médaille d'or");
+      } else if (
+        newPoint >= 800 &&
+        newPoint < 1000 &&
+        !userBadges.some((badge) => badge.label === 'Médaille de platine')
+      ) {
+        winABadge('Médaille de platine');
+      }
     }
   }
   const restartButton = document.querySelector('.btnRestart');
   score = 0;
+
+  // Event listener for restart button to reset quiz
   restartButton.addEventListener('click', () => {
     clearInterval(intervalId);
     intervalId = undefined;
@@ -207,7 +210,6 @@ async function renderScore() {
     timerActivated = false;
     quizPage();
   });
-
   const btnClose = document.querySelector('.btn-close');
   btnClose.addEventListener('click', () => {
     Navigate('/categories');
@@ -216,13 +218,8 @@ async function renderScore() {
   const displayQuizModal = new Modal(modal);
   displayQuizModal.show();
 }
-async function badgeIsAlreadyEarned(label, userBadges) {
-  console.log('userbadgezzdzefez', userBadges);
-  console.log('userbadge', userBadges);
-  if (userBadges.length === 0) return false;
-  return userBadges.some((badge) => badge.label === label);
-}
 
+// Adds the specified badge to the user
 async function winABadge(label) {
   await addOneBadgeToUser(userID, label);
   Swal.fire({
@@ -238,7 +235,7 @@ async function winABadge(label) {
     `,
   });
 }
-
+// Randomly shuffles the elements in the given table
 function randomTab(tab) {
   const array = tab;
   for (let i = tab.length - 1; i > 0; i -= 1) {
@@ -246,6 +243,8 @@ function randomTab(tab) {
     [array[i], array[j]] = [tab[j], tab[i]];
   }
 }
+
+// Renders the quiz page
 async function renderQuizPage() {
   clearPage();
   const main = document.querySelector('main');
@@ -257,6 +256,7 @@ async function renderQuizPage() {
                    <div class="display-timer"> ${minutes} ${seconds} </div>
                  </div>`;
   }
+  // If all questions have been answered, render score
   if (currentQuestion === nbQuestion) {
     renderScore();
   } else {
@@ -308,50 +308,58 @@ async function renderQuizPage() {
 
     if (timerActivated === true) {
       printTime();
-      startChrono();
+      startTimer();
     }
 
     let isValidate = false;
     let selectedAnswer = null;
     const errorMessage = document.querySelector('#errorMessage');
     let allAnswers = document.querySelectorAll('.answer');
+
     allAnswers.forEach((answer) => {
       const a = answer;
       answer.addEventListener('click', () => {
         errorMessage.innerText = '';
         if (!isValidate) {
+          // Reset background color for all answers
           allAnswers.forEach((otherAnswer) => {
             const other = otherAnswer;
             other.style.backgroundColor = 'white';
           });
+          // Set background color for the selected answer
           a.style.backgroundColor = 'rgba(200, 200, 200, 0.7)';
           selectedAnswer = answer.value;
-          console.log('selectedAnswer : ', selectedAnswer);
         }
       });
     });
 
+    // Create a button "Continuer"
     const continueButton = document.createElement('button');
     continueButton.type = 'button';
     continueButton.className = 'btn btn-primary';
     continueButton.id = 'btnContinue';
     continueButton.innerText = 'Continuer';
     const validate = document.getElementById('btnValidate');
+    if (startTime === 0) {
+      return;
+    }
     validate.addEventListener('click', () => {
       isValidate = true;
       let selectedAnswerIsFalse = false;
+      // Check if no answer is selected
       if (selectedAnswer === null) {
         errorMessage.innerText = 'Merci de sélectionner une réponse';
         isValidate = false;
       } else {
         errorMessage.innerText = '';
+        // Check if the selected answer is correct
         if (selectedAnswer === goodAnswer) {
           selectedAnswerIsFalse = false;
           score += 1;
         } else {
           selectedAnswerIsFalse = true;
         }
-        console.log('score : ', score);
+        // Apply styles to the answers based on correction
         allAnswers = document.querySelectorAll('.answer');
         allAnswers.forEach((currentAnswer) => {
           const answer = currentAnswer;
@@ -363,6 +371,7 @@ async function renderQuizPage() {
             answer.style.backgroundColor = 'white';
           }
         });
+        // Replace the "Valider" button with the "Continuer" button
         validate.replaceWith(continueButton);
       }
     });
@@ -374,23 +383,24 @@ async function renderQuizPage() {
   }
 }
 
-function startChrono() {
+function startTimer() {
+  // If the timer is running we clear it 
   if (intervalId) {
     clearInterval(intervalId);
   }
-
-  intervalId = setInterval(printTime, 1000); // 1000 donc tt les sec
+  // starts a new interval that calls the printTime function every 1000 milliseconds
+  intervalId = setInterval(printTime, 1000); 
 }
 
 function printTime() {
   const displaychrono = document.querySelector('.display-timer');
-  // a verifier si utilisateur fini avant que timer s'écoule
+  const containerTimer = document.querySelector('.container-timer');
   if (!displaychrono) {
     clearInterval(intervalId);
     intervalId = undefined;
     return;
   }
-
+  // If the time is > than 60 secondes, converts in minutes 
   if (startTime >= 60) {
     const minutesTimer = Math.floor(startTime / 60);
     const secondsTimer = startTime % 60;
@@ -398,8 +408,13 @@ function printTime() {
   } else {
     displaychrono.innerHTML = `Temps restants : 00 min : ${startTime} sec`;
   }
+  // If the time is less than 10 secondes, reset background color
+  if (startTime <= 10) {
+    containerTimer.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+  }
 
   startTime -= 1;
+  // If timer equals 0 and we haven't finished the quiz
   if (startTime === 0 && currentQuestion !== nbQuestion) {
     Swal.fire({
       icon: 'warning',

@@ -2,20 +2,27 @@ import { clearPage } from '../../utils/render';
 import quizLinkEventListeners from '../../utils/quiz';
 import { readAllQuizzesByCategory } from '../../models/quizzes';
 import Navigate from '../Router/Navigate';
+import {showError} from '../../utils/customAlerts'
 
 
 let categoryName;
 
 const QuizListPage = async () => {
   clearPage();
+  // Recover the label from the url
   const url = new URLSearchParams(window.location.search);
   categoryName = url.get('label');
-  console.log('Le labell', categoryName);
   renderQuizListInCategory();
 };
 
 async function renderQuizListInCategory() {
+  // Get all the quizzes for the category specified
   const quizzesInCategory = await readAllQuizzesByCategory(categoryName);
+  if(quizzesInCategory === null) {
+    showError(`La catégorie specifiée n'existe pas`);
+    Navigate('/categories');
+    return;
+  }
   const main = document.querySelector('main');
   let QuizList = '';
   const cardsInRow = 3; 
@@ -34,7 +41,6 @@ async function renderQuizListInCategory() {
     <div class="row mt-3 lowPart">
   `;
   if (numberOfQuiz === 0) {
-    console.log('aucun quiz trouvé');
     QuizList += `   
     <div class="alert alert-light text-center alertQuizListPage" role="alert">
     <p>Aucun quiz n'a été créé pour cette catégorie.
@@ -45,13 +51,12 @@ async function renderQuizListInCategory() {
   } else {
     quizzesInCategory.forEach((q) => {
       if (counter === cardsInRow) {
-        console.log('COUNTER:', counter);
         QuizList += `
       </div><div class="row mt-3 lowPart">
     `;
         counter = 0;
       }
-
+      // Display the cards with title and pseudo
       QuizList += `
     <div class="col-12 col-lg-3 mt-3">
     <a id_quiz = "${q.quiz_id}" class= "quiz text-decoration-none">
@@ -65,7 +70,6 @@ async function renderQuizListInCategory() {
         </div>
   `;
       counter+=1;
-      console.log('compteur apres incrementation', counter);
     });
   }
   QuizList += `
@@ -75,13 +79,12 @@ async function renderQuizListInCategory() {
 </section>
 `;
   main.innerHTML = QuizList;
-
+  // If the category don't have quizzes yet, redirect the user to /create
   if (numberOfQuiz === 0) {
     const btnCreateQuiz = document.getElementById('createQuiz');
     btnCreateQuiz.addEventListener('click', renderCreateQuiz);
   }
   quizLinkEventListeners();
-  console.log('Categorie:');
 }
 
 function renderCreateQuiz() {

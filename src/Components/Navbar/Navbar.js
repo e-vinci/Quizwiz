@@ -3,7 +3,7 @@ import logo from '../../img/logo.png';
 import Navigate from '../Router/Navigate';
 import { getConnectedUserDetails } from '../../utils/auths';
 import imgScore from '../../img/score.png';
-import { showSuccess} from '../../utils/customAlerts';
+import { showSuccess } from '../../utils/customAlerts';
 
 /**
  * Render the Navbar which is styled by using Bootstrap
@@ -11,39 +11,26 @@ import { showSuccess} from '../../utils/customAlerts';
  * - the URI associated to a page shall be given in the attribute "data-uri" of the Navbar
  * - the router will show the Page associated to this URI when the user click on a nav-link
  */
-let userP;
+let userPoint;
 
 const Navbar = async () => {
   const navbarWrapper = document.querySelector('#navbarWrapper');
 
   const isLogged = localStorage.getItem('token') || sessionStorage.getItem('token');
-  console.log('je suis dans le token');
-  console.log(isLogged);
 
   let loginOrLogoutLink;
   let createLink;
   let userSpace;
   let point;
-  let userName;
- 
   if (isLogged) {
-    console.log('hi je suis dans la navbar');
     await getConnectedUserDetails().then((userDetails) => {
-      console.log('userDetails');
-      console.log(userDetails);
-      console.log('dans le await');
-      userP = userDetails.userPoint;
-      userName = userDetails.userName;
-      console.log('username');
-      console.log(userName);
-      console.log(userP);
-      console.log('apres le await');
+      userPoint = userDetails.userPoint;
     });
     loginOrLogoutLink = `<a id = "logOut"class="nav-link">Déconnexion</a>`;
     createLink = `<li class="nav-item"><a class="nav-link" aria-current="page" href="#" data-uri="/create">Créer</a></li>`;
     userSpace = `<a class="nav-link" href="#" data-uri="/userSpace">Mon espace</a>`;
     point = ` <a class="nav-link" id="user_point" d">
-    <img src='${imgScore}' alt="Icone Points" class="iconScore"> ${userP}
+    <img src='${imgScore}' alt="Icone Points" class="iconScore" /> ${userPoint}
 </a>`;
   } else {
     loginOrLogoutLink = `<a class="nav-link text-white btn-purple text-center" href="#" data-uri="/login">Connexion</a>`;
@@ -125,7 +112,7 @@ function handleLogout() {
 function handleUserPoint() {
   Swal.fire({
     title: `Tes points`,
-    text: `Tu as accumulé ${userP} points ! `,
+    text: `Tu as accumulé ${userPoint} points ! `,
     imageUrl: `${imgScore}`,
     imageAlt: 'icon score',
     imageWidth: 150,

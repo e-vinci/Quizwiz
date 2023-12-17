@@ -11,16 +11,15 @@ let questionCount = 0;
 let currentCount = 0;
 let numberOfQuestions = 0;
 const numberBadAnswer = 3;
+const maxQuestionsPerQuiz  = 70;
 let title;
 let category;
 let quizToBeCreated;
 const main = document.querySelector('main');
 
-checkAuthentication('/create');
-
 const CreateQuizPage = async () => {
+  // Checking if the user is authenticated
   const isConnected = await checkAuthentication();
-
   if (!isConnected) {
     showError('Veuillez vous connecter');
     Navigate('/login');
@@ -60,6 +59,7 @@ async function renderFormInfoQuiz() {
 								<label class="mb-2 text-muted" for="category">Catégorie</label>
 								<select class="form-select" id="category" name="category" required autofocus>
                 <option value="" disabled selected>Veuillez sélectionner une catégorie</option>`;
+  // Adding options for each category
   allCategories.forEach((c) => {
     MainFormInfoQuiz += ` <option value="${c.label}">${c.label}</option>`;
   });
@@ -81,7 +81,7 @@ async function renderFormInfoQuiz() {
 							</div>
 						</div>
 						<div class="mb-3 text-center">
-							<button type="submit" class="btn btn-primary " id="btnSubmitNumber">Continuer</button>
+							<button type="submit" class="btn btn-primary " id="btnSubmitFormInfo">Continuer</button>
 						</div>
 					</form>
 				</div>
@@ -95,21 +95,25 @@ async function renderFormInfoQuiz() {
 }
 
 function attachEventListenersFromInfoQuiz() {
-  const btnSubmitNumber = document.querySelector('#btnSubmitNumber');
+  const btnSubmitFormInfo = document.querySelector('#btnSubmitFormInfo');
   const btnInfo = document.querySelector('#btnInfo');
   title = document.querySelector('#titleQuiz');
   category = document.querySelector('#category');
+
+  // Event listener for information on number of questions allowed
   btnInfo.addEventListener('click', (e) => {
     e.preventDefault();
     showInfo('Le nombre maximum de question autorisé est de 70');
   });
 
-  btnSubmitNumber.addEventListener('click', (e) => {
+  btnSubmitFormInfo.addEventListener('click', (e) => {
     e.preventDefault();
     numberOfQuestions = parseInt(document.querySelector('#numberQuestion').value, 10);
-    console.log(numberOfQuestions);
-    console.log('titre', title.value);
-    if (!Number.isNaN(numberOfQuestions) && numberOfQuestions > 0 && title.value && category.value)
+    // Checking the inputs
+    if(numberOfQuestions > maxQuestionsPerQuiz){
+      showError('Vous avez dépassé la limite de questions possibles');
+
+    }else if (!Number.isNaN(numberOfQuestions) && numberOfQuestions > 0 && title.value && category.value)
       renderQuizQuestions();
     else showError('Tous les champs du formulaire sont obligatoires');
   });
@@ -142,6 +146,7 @@ function renderQuizQuestions() {
               </div>
             </div>`;
   let j = 2;
+  // For each bad answer, if the answer at the current index exists in the array, set the input value
   for (let index = 0; index < numberBadAnswer; index += 1) {
     quizHTML += `
     <div class="row mb-3">
@@ -155,6 +160,7 @@ function renderQuizQuestions() {
     j += 1;
   }
   if (questionCount === 1) {
+    // Button for the first question
     quizHTML += `
     <div class="mb-3 d-flex justify-content-end">
     <button type="submit" class="btn btn-primary " id="previousQuestion" style="display: none;">Précédent</button>
@@ -168,6 +174,8 @@ function renderQuizQuestions() {
 </section>
 `;
   } else {
+    // Buttons for questions other than the first one
+
     quizHTML += `
     <div class="mb-3 d-flex justify-content-between">
       <button type="submit" class="btn btn-outline-info" id="previousQuestion">Précédent</button>
@@ -194,10 +202,12 @@ function renderQuizQuestions() {
   attachEventListenersQuizQuestions();
 }
 
+// Event listeners for buttons in the quiz creation form
 function attachEventListenersQuizQuestions() {
   const previousQuestion = document.querySelector('#previousQuestion');
   const nextQuestion = document.querySelector('#nextQuestion');
 
+  // Event listener for the "Previous" button
   previousQuestion.addEventListener('click', (e) => {
     e.preventDefault();
     if (questionCount > 1) {
@@ -206,7 +216,7 @@ function attachEventListenersQuizQuestions() {
     }
   });
 
-  // eslint-disable-next-line consistent-return
+  // Event listener for the "Next" or "Finish" button
   nextQuestion.addEventListener('click', async (e) => {
     e.preventDefault();
     if (questionCount <= numberOfQuestions) {
@@ -218,18 +228,15 @@ function attachEventListenersQuizQuestions() {
         showError('Tous les champs du formulaire sont obligatoires');
         return renderQuizQuestions;
       }
-      console.log('question : ', question.value);
-      console.log('goodAnswer : ', goodAnswer.value);
 
       let answersBad = [];
-
+      // Extracts and stores the bad answers in the answersBad array
       answersBad = Array.from(badAnswers).map((answer) => answer.value);
 
+      // Combine the question, good answer, and bad answers into an array for the current question
       const questAnsw = [question.value, goodAnswer.value, ...answersBad];
 
-      console.log('questAnsw : ', questAnsw);
-      console.log('questions : ', questions);
-
+      // Update or push the current question data to the questions array
       if (questionCount === currentCount) {
         questions.push(questAnsw);
         questionCount += 1;
@@ -240,34 +247,30 @@ function attachEventListenersQuizQuestions() {
       }
 
       if (questionCount <= numberOfQuestions) {
-        console.log(`I am in nextQuestion.add ${questionCount}`);
         renderQuizQuestions();
       } else {
         const result = await Swal.fire({
-          title: 'Êtes-vous sûr de vouloir créer ce quiz?',
-          text: 'Une fois créé, le quiz ne pourra pas être modifié.',
+          title: 'Êtes-tu sûr de vouloir créer ce quiz?',
           icon: 'question',
           showCancelButton: true,
           confirmButtonText: 'Oui, créer le quiz!',
           cancelButtonText: 'Annuler',
         });
         if (result.isConfirmed) {
+          // Create the quiz
           quizToBeCreated = {
             title: title.value,
             category: category.value,
             questions,
           };
-          console.log('quizToBeCreated : ', quizToBeCreated);
           await addOneQuiz(quizToBeCreated);
           Navigate('/userSpace');
         } else {
-          questionCount -= 1;
-          currentCount -= 1;
-          console.log('current', currentCount);
-          return renderQuizQuestions();
+          return CreateQuizPage();
         }
       }
     }
+    return null;
   });
 }
 

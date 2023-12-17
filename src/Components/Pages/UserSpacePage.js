@@ -16,17 +16,16 @@ let userID;
 let userName;
 
 const UserSpacePage = async () => {
+  // Check if the user is authenticated
   const isConnected = await checkAuthentication();
 
-  if(!isConnected){
+  if (!isConnected) {
     showError('Veuillez vous connecter');
     Navigate('/login');
     return;
-
   }
 
   await getConnectedUserDetails().then((userDetails) => {
-    console.log(userDetails);
     userID = userDetails.userID;
     userName = userDetails.userName;
     renderUserQuiz();
@@ -59,6 +58,7 @@ async function renderUserQuiz() {
         <div class="container-xxl justify-content-center pt-5 "> 
      `;
 
+  // Check if the user has created any quizzes
   if (allQuizzesByUser.length === 0) {
     mainListQuiz += `   
     <div class="alert alert-light text-center">
@@ -105,16 +105,17 @@ async function renderUserQuiz() {
   linkBadge.addEventListener('click', () => {
     renderUserBadges();
   });
-  attachDeleteEventListeners();
+  deleteEventListeners();
   quizLinkEventListeners();
 }
 
-function attachDeleteEventListeners() {
+function deleteEventListeners() {
   const deleteButtons = document.querySelectorAll('.delete-quiz-btn');
 
   deleteButtons.forEach((btn) => {
     btn.addEventListener('click', async (e) => {
-      e.stopPropagation(); // va empêcher d'autres gestionnaires d'événements de s'éxecuter
+      // Prevent other event handlers from executing
+      e.stopPropagation();
       e.preventDefault();
       const deleteQuiz = e.target.dataset.id;
       try {
@@ -170,20 +171,16 @@ async function renderUserBadges() {
           <div class="container-xxl justify-content-center pt-5">
       `;
 
-  mainUserBadges += `
-          
+  mainUserBadges += `     
             <div class="card shadow-lg">
               <div class="card-body p-5"> 
               <div class="row mt-3">`;
   let count = 0;
   allBadges.forEach((badge) => {
     let isWinned = false;
-    console.log('allBadgesByUser', allBadgesByUser);
-    console.log('badge', badge);
     if (count % 4 === 0 && count !== 0) {
       mainUserBadges += ' </div>  <div class="row mt-3">';
     }
-    console.log('allBadgesByUser', allBadgesByUser);
 
     allBadgesByUser.forEach((b) => {
       if (b.badge_id === badge.badge_id) {
@@ -218,7 +215,6 @@ async function renderUserBadges() {
   badgeImages.forEach((badgeImage) => {
     badgeImage.addEventListener('click', () => {
       const badgeLabel = badgeImage.dataset.badge;
-      console.log(badgeLabel, 'badgeLabel');
       showBadgeInfo(badgeLabel);
     });
   });
@@ -241,6 +237,7 @@ function showBadgeInfo(badgeLabel) {
   });
 }
 
+// Get points required for each badge
 function getPointForBadge(badgeLabel) {
   if (badgeLabel === `Médaille d'or`) return 600;
   if (badgeLabel === `Médaille de bronze`) return 200;
@@ -248,6 +245,7 @@ function getPointForBadge(badgeLabel) {
   if (badgeLabel === `Médaille de platine`) return 800;
   return medalPlatine;
 }
+// Define the name of the image for each badge
 function getImageForBadge(badgeLabel) {
   if (badgeLabel === `Médaille d'or`) return medalGold;
   if (badgeLabel === `Médaille de bronze`) return medalBronze;

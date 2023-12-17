@@ -7,7 +7,7 @@ async function getConnectedUserDetails() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        authorization: `${token}`,
+        Authorization: `${token}`,
       },
     };
 
@@ -19,8 +19,6 @@ async function getConnectedUserDetails() {
     }
 
     const data = response.json();
-    console.log('je suis dans la methode details front');
-    console.log(data);
     return data;
   } catch (error) {
     Swal.fire({
